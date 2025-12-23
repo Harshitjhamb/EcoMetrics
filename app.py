@@ -642,8 +642,6 @@ def sync_external_data():
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
-
-
 @app.get("/api/combined_data")
 def combined_data():
     station = request.args.get("station")
@@ -807,12 +805,23 @@ def get_all_stations():
     try:
         conn = get_db_connection()
         with conn.cursor() as cur:
-            cur.execute("SELECT station_id, name FROM stations ORDER BY name")
+            cur.execute("""
+                SELECT station_id, name
+                FROM public.stations
+                ORDER BY name
+            """)
             rows = cur.fetchall()
+
         conn.close()
-        return jsonify(rows)
+        return jsonify(rows), 200
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print("❌ ERROR in /api/station:", e)
+        return jsonify({
+            "status": "error",
+            "message": "Failed to fetch stations",
+            "details": str(e)
+        }), 500
 
 @app.route("/api/pollutant_trend")
 def pollutant_trend():
@@ -982,6 +991,13 @@ def station_by_id():
     finally:
         conn.close()
 
+@app.get("/")
+def home():
+    return jsonify({
+        "status": "ok",
+        "message": "EcoMetrics API is running 🚀"
+    })
+
 @app.get("/api/station_by_name")
 def station_by_name():
     name = request.args.get("name")
@@ -1053,13 +1069,6 @@ def adv_search():
             conn.close()
         except:
             pass
-            
-@app.get("/")
-def home():
-    return jsonify({
-        "status": "ok",
-        "message": "EcoMetrics API is running 🚀"
-    })
 
 if __name__ == "__main__":
     print(f"Starting Flask server at http://{HOST}:{PORT}")
