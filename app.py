@@ -704,7 +704,6 @@ def register_user():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
-
 @app.route("/api/insert_pollutant", methods=["POST"])
 def insert_pollutant():
     data = request.get_json()
@@ -928,33 +927,6 @@ def login_user():
     except Exception as e:
         print("Login Error:", e)
         return jsonify({"status": "error", "message": str(e)}), 400
-
-    finally:
-        conn.close()
-
-@app.post("/api/register_user")
-def register_user():
-    data = request.json or {}
-
-    first = data.get("first_name")
-    last = data.get("last_name")
-    mid = data.get("middle_name")
-    uname = data.get("user_name")
-    age = data.get("age")
-
-    conn = get_db_connection()
-    try:
-        cur = conn.cursor()  # NO dictionary cursor here
-        cur.execute("""
-            INSERT INTO users (first_name, last_name, middle_name, user_name, age)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (first, last, mid, uname, age))
-        conn.commit()
-        return jsonify({"status": "ok"}), 200
-
-    except Exception as e:
-        print("Register Error:", e)
-        return jsonify({"error": str(e)}), 500
 
     finally:
         conn.close()
