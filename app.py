@@ -171,13 +171,12 @@ DB_NAME = os.getenv("DB_NAME", "harshit")
 def get_db_connection():
     return psycopg2.connect(
         host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT", 5432),
-        database=os.getenv("DB_NAME"),
+        port=int(os.getenv("DB_PORT")),
+        dbname=os.getenv("DB_NAME"),
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
+        sslmode="require",   # VERY IMPORTANT
         cursor_factory=psycopg2.extras.RealDictCursor,
-        sslmode="require",
-        connect_timeout=5,
     )
 
 
