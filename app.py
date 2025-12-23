@@ -175,10 +175,9 @@ def get_db_connection():
         dbname=os.getenv("DB_NAME"),
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
-        sslmode="require",   # VERY IMPORTANT
+        sslmode="require",  # REQUIRED for Supabase
         cursor_factory=psycopg2.extras.RealDictCursor,
     )
-
 
 def get_latest_pollutant_reading_for_station(station_display_name: str | None):
     """
