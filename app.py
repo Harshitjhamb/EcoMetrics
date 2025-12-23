@@ -168,7 +168,6 @@ DB_USER = os.getenv("DB_USER", "root")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "Harshit@5993")
 DB_NAME = os.getenv("DB_NAME", "harshit")
 
-
 def get_db_connection():
     return psycopg2.connect(
         host=os.getenv("DB_HOST"),
@@ -643,43 +642,64 @@ def sync_external_data():
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
-@app.route("/api/combined_data", methods=["GET"])
+@app.get("/api/combined_data")
 def combined_data():
-    """
-    Used by frontend dashboard.
-    - Reads latest pollutant row for the requested station
-    - Reads latest meteorological row for the same station
-    """
     station = request.args.get("station")
-    print(f"/api/combined_data called for station: {station}")
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT *
+                FROM pollutant_readings
+                WHERE location_name = %s
+                ORDER BY reading_date DESC, reading_time DESC
+                LIMIT 1
+            """, (station,))
+            pollutant = cur.fetchone()
 
-    db_pollutants = get_latest_pollutant_reading_for_station(station)
-    db_meteo = get_latest_meteorological_reading_for_station(station)
+            cur.execute("""
+                SELECT *
+                FROM meteorological_data
+                WHERE station_name = %s
+                ORDER BY record_date DESC, record_time DESC
+                LIMIT 1
+            """, (station,))
+            meteo = cur.fetchone()
 
-    return jsonify(
-        make_json_safe(
-            {
-                "location": station,
-                "pollutant_data": db_pollutants,
-                "meteorological_data_db": db_meteo,
-            }
-        )
-    )
+        conn.close()
+
+        return jsonify(make_json_safe({
+            "location": station,
+            "pollutant_data": pollutant,
+            "meteorological_data_db": meteo,
+        }))
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.post("/api/register_user")
-def register_user_endpoint():
-    data = request.json or {}
-
-    result = create_user(
-        data.get("first_name"),
-        data.get("middle_name"),
-        data.get("last_name"),
-        data.get("user_name"),
-        data.get("age")
-    )
-
-    status_code = 200 if result["status"] == "success" else 400
-    return jsonify(result), status_code
+def register_user():
+    data = request.json
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO users (first_name, middle_name, last_name, user_name, age)
+                VALUES (%s,%s,%s,%s,%s)
+                RETURNING user_id
+            """, (
+                data.get("first_name"),
+                data.get("middle_name"),
+                data.get("last_name"),
+                data.get("user_name"),
+                data.get("age"),
+            ))
+            uid = cur.fetchone()["user_id"]
+            conn.commit()
+        conn.close()
+        return jsonify({"status": "success", "user_id": uid})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 @app.route("/api/insert_pollutant", methods=["POST"])
 def insert_pollutant():
@@ -777,16 +797,16 @@ def insert_meteorological():
         conn.close()
     return jsonify({"status": "ok"}), 201
 
-@app.route('/api/station', methods=['GET'])
+@app.get("/api/station")
 def get_all_stations():
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
-        cursor.execute("SELECT station_id, name FROM stations")
-        rows = cursor.fetchall()
-        return jsonify(rows), 200
+        with conn.cursor() as cur:
+            cur.execute("SELECT station_id, name FROM stations ORDER BY name")
+            rows = cur.fetchall()
+        conn.close()
+        return jsonify(rows)
     except Exception as e:
-        print("❌ ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/pollutant_trend")
