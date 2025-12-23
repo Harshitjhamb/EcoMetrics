@@ -16,7 +16,7 @@ packaging==25.0
 pathspec==0.12.1
 platformdirs==4.5.0
 pycparser==2.23
-PyMySQL==1.1.2
+psycopg2-binary
 python-dotenv==1.2.1
 pytokens==0.3.0
 requests==2.32.5
