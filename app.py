@@ -4,7 +4,8 @@ from pathlib import Path
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
-import pymysql
+import psycopg2
+import psycopg2.extras
 from datetime import date, datetime, time, timedelta
 
 def clean(val):
@@ -169,15 +170,17 @@ DB_NAME = os.getenv("DB_NAME", "harshit")
 
 
 def get_db_connection():
-    return pymysql.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME,
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT", 5432),
+        database=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        cursor_factory=psycopg2.extras.RealDictCursor,
+        sslmode="require",
         connect_timeout=5,
-        cursorclass=pymysql.cursors.DictCursor
     )
+
 
 def get_latest_pollutant_reading_for_station(station_display_name: str | None):
     """
