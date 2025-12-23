@@ -679,27 +679,31 @@ def combined_data():
 
 @app.post("/api/register_user")
 def register_user():
-    data = request.json
+    data = request.json or {}
+
+    first = data.get("first_name")
+    middle = data.get("middle_name")
+    last = data.get("last_name")
+    username = data.get("user_name")
+    age = data.get("age")
+
     try:
         conn = get_db_connection()
         with conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO users (first_name, middle_name, last_name, user_name, age)
-                VALUES (%s,%s,%s,%s,%s)
+                VALUES (%s, %s, %s, %s, %s)
                 RETURNING user_id
-            """, (
-                data.get("first_name"),
-                data.get("middle_name"),
-                data.get("last_name"),
-                data.get("user_name"),
-                data.get("age"),
-            ))
-            uid = cur.fetchone()["user_id"]
+            """, (first, middle, last, username, age))
+            
+            user_id = cur.fetchone()["user_id"]
             conn.commit()
-        conn.close()
-        return jsonify({"status": "success", "user_id": uid})
+
+        return jsonify({"status": "success", "user_id": user_id}), 200
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"status": "error", "message": str(e)}), 400
+
 
 @app.route("/api/insert_pollutant", methods=["POST"])
 def insert_pollutant():
