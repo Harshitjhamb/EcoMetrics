@@ -642,6 +642,8 @@ def sync_external_data():
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
+
+
 @app.get("/api/combined_data")
 def combined_data():
     station = request.args.get("station")
@@ -1051,6 +1053,13 @@ def adv_search():
             conn.close()
         except:
             pass
+            
+@app.get("/")
+def home():
+    return jsonify({
+        "status": "ok",
+        "message": "EcoMetrics API is running 🚀"
+    })
 
 if __name__ == "__main__":
     print(f"Starting Flask server at http://{HOST}:{PORT}")
