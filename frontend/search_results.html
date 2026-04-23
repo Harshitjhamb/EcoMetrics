@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoMetrics - Search Results</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: #090909;
+            font-family: "Inter", Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            color: #f1f1f1;
+        }
+
+        /* Page Title */
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .page-title i {
+            margin-right: 10px;
+            color: #2c75ff;
+        }
+
+        /* Main container */
+        .results-container {
+            max-width: 1250px;
+            margin: auto;
+        }
+
+        /* Glass Effect Card */
+        .results-box {
+            background: rgba(40, 40, 40, 0.30);
+            backdrop-filter: blur(16px);
+            padding: 25px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Scroll section */
+        .results-table-wrapper {
+            max-height: 72vh;
+            overflow-y: auto;
+            border-radius: 14px;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+            color: #e7e7e7;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            font-weight: 600;
+        }
+
+        tbody td {
+            padding: 12px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: #dcdcdc;
+        }
+
+        tbody tr:hover td {
+            background: rgba(255, 255, 255, 0.07);
+            transition: 0.25s ease;
+        }
+
+        .empty-msg {
+            text-align: center;
+            padding: 20px;
+            opacity: 0.8;
+        }
+
+        /* Back button */
+        .back-btn {
+            margin-top: 25px;
+            display: inline-block;
+            padding: 12px 22px;
+            border-radius: 10px;
+            text-decoration: none;
+            background: linear-gradient(135deg, #2c75ff, #1d55d8);
+            color: white;
+            font-weight: 600;
+            transition: 0.25s ease;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(135deg, #1d55d8, #2c75ff);
+            transform: translateY(-2px);
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        /* Toolbar + layout */
+        .results-toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .toolbar-input {
+            flex: 1;
+            min-width: 220px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.25);
+            color: #fff;
+            outline: none;
+        }
+        .toolbar-btn {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(44, 117, 255, 0.18);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .toolbar-btn.secondary {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .toolbar-btn:hover {
+            transform: translateY(-1px);
+            background: rgba(44, 117, 255, 0.28);
+        }
+        .toolbar-select {
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.25);
+            color: #fff;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .results-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .filters-panel {
+            background: rgba(0, 0, 0, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            padding: 14px;
+            position: sticky;
+            top: 18px;
+            max-height: 72vh;
+            overflow: auto;
+        }
+        .filters-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .filters-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .filter-section {
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .filter-summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            user-select: none;
+        }
+        .filter-summary::-webkit-details-marker { display:none; }
+        .filter-badge {
+            display: none;
+            min-width: 22px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            align-items: center;
+            justify-content: center;
+            background: rgba(44, 117, 255, 0.35);
+            border: 1px solid rgba(44, 117, 255, 0.55);
+            font-size: 12px;
+        }
+        .filter-body {
+            padding: 10px 12px 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .facet-search {
+            width: 100%;
+            padding: 9px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(0,0,0,0.18);
+            color: #fff;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        .facet-list {
+            max-height: 220px;
+            overflow: auto;
+            padding-right: 4px;
+        }
+        .facet-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 6px 4px;
+            border-radius: 8px;
+        }
+        .facet-item:hover {
+            background: rgba(255,255,255,0.06);
+        }
+        .facet-item span {
+            display: inline-block;
+            max-width: 230px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .range-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .range-input {
+            width: 100%;
+            padding: 9px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(0,0,0,0.18);
+            color: #fff;
+            outline: none;
+        }
+
+        /* Date & time filter UI */
+        .dt-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .dt-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .dt-label {
+            font-size: 12px;
+            opacity: 0.85;
+        }
+        .dt-select {
+            width: 100%;
+            padding: 9px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(0,0,0,0.18);
+            color: #fff;
+            outline: none;
+            cursor: pointer;
+        }
+        .dt-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .dt-hint {
+            margin-top: 10px;
+            font-size: 12px;
+            opacity: 0.75;
+        }
+
+        details.filter-section[open] .filter-summary {
+            background: rgba(255,255,255,0.03);
+        }
+
+        @media (max-width: 1024px) {
+            .results-layout { grid-template-columns: 1fr; }
+            .filters-panel { position: relative; top: 0; max-height: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="results-container">
+
+        <div class="page-title">
+            <i class="fa-solid fa-magnifying-glass"></i> Search Results
+        </div>
+
+        <div class="results-box">
+            <!-- Search + controls -->
+            <div class="results-toolbar">
+                <input id="table-filter" type="text" placeholder="Search in results..."
+                    class="toolbar-input">
+                <button id="clear-filter" class="toolbar-btn">Clear</button>
+                <button id="clear-all" class="toolbar-btn secondary">Clear all filters</button>
+            </div>
+
+            <div class="results-layout">
+                <!-- Faceted filters -->
+                <aside class="filters-panel">
+                    <div class="filters-title">
+                        <i class="fa-solid fa-filter"></i> Filters
+                    </div>
+                    <!-- Manual date/time range filter -->
+                    <details class="filter-section" open>
+                        <summary class="filter-summary">
+                            <span>Date & Time</span>
+                            <span class="filter-badge" id="badge-__datetime__"></span>
+                        </summary>
+                        <div class="filter-body">
+                            <div class="dt-grid">
+                                <div class="dt-row">
+                                    <div class="dt-hint" style="margin-top:0;">
+                                        Using: <b id="dt-used-date">Date</b> + <b id="dt-used-time">Time</b>
+                                    </div>
+                                </div>
+                                <div class="dt-row">
+                                    <label class="dt-label">From</label>
+                                    <div class="dt-pair">
+                                        <input id="dt-from-date" class="range-input" type="date" />
+                                        <input id="dt-from-time" class="range-input" type="time" step="60" />
+                                    </div>
+                                </div>
+                                <div class="dt-row">
+                                    <label class="dt-label">To</label>
+                                    <div class="dt-pair">
+                                        <input id="dt-to-date" class="range-input" type="date" />
+                                        <input id="dt-to-time" class="range-input" type="time" step="60" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dt-hint">Tip: set a range to filter results.</div>
+                        </div>
+                    </details>
+                    <div id="filters-container" class="filters-container"></div>
+                </aside>
+
+                <!-- Results table -->
+                <div class="results-table-wrapper">
+                    <table id="results-table">
+                        <thead id="results-thead"></thead>
+                        <tbody id="results-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <a href="dashboard.html" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const raw = sessionStorage.getItem("adv_search_results");
+
+            if (!raw) {
+                document.getElementById("results-tbody").innerHTML =
+                    `<tr><td colspan="5" class="empty-msg">No search results found.</td></tr>`;
+                return;
+            }
+
+            let rows = [];
+            try {
+                rows = JSON.parse(raw);
+            } catch (err) {
+                console.error("JSON Parse Error", err);
+                return;
+            }
+
+            const tableHead = document.getElementById("results-thead");
+            const tableBody = document.getElementById("results-tbody");
+            const filterInput = document.getElementById("table-filter");
+            const clearBtn = document.getElementById("clear-filter");
+            const clearAllBtn = document.getElementById("clear-all");
+            const filtersContainer = document.getElementById("filters-container");
+
+            const dtUsedDateEl = document.getElementById("dt-used-date");
+            const dtUsedTimeEl = document.getElementById("dt-used-time");
+            const dtFromDateEl = document.getElementById("dt-from-date");
+            const dtFromTimeEl = document.getElementById("dt-from-time");
+            const dtToDateEl = document.getElementById("dt-to-date");
+            const dtToTimeEl = document.getElementById("dt-to-time");
+
+            if (!rows.length) {
+                tableBody.innerHTML =
+                    `<tr><td colspan="5" class="empty-msg">No records found.</td></tr>`;
+                return;
+            }
+
+            const originalColumns = Object.keys(rows[0]);
+
+            // Reorder columns for display:
+            // 1) location_name first (if present)
+            // 2) pollutant-like columns next (in their original order)
+            // 3) date/time columns next
+            // 4) everything else (original order)
+            const reorderColumns = (cols) => {
+                const locationCandidates = ["location_name", "station_name", "name"];
+                const firstLocation = locationCandidates.find(c => cols.includes(c));
+                const locationFirst = firstLocation ? [firstLocation] : [];
+
+                const isPollutantCol = (c) =>
+                    /^(pm25_ug_m3|pm10|PM10|so2_ug_m3|no2_ug_m3|OZONE|o3|CO|co|NH3|nh3|aqi)$/i.test(c) ||
+                    /(pm25|pm10|so2|no2|ozone|nh3|co|aqi)/i.test(c);
+
+                const pollutantCols = cols.filter(c => c !== firstLocation && isPollutantCol(c));
+
+                const dateTimeCols = cols.filter(c =>
+                    ["reading_date", "record_date", "reading_time", "record_time"].includes(c)
+                );
+
+                const used = new Set([...locationFirst, ...pollutantCols, ...dateTimeCols]);
+                const rest = cols.filter(c => !used.has(c));
+
+                return [...locationFirst, ...pollutantCols, ...dateTimeCols, ...rest];
+            };
+
+            const columns = reorderColumns(originalColumns);
+
+            const titleCase = (s) =>
+                String(s)
+                    .replaceAll("_", " ")
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .replace(/\w\S*/g, (t) => t.charAt(0).toUpperCase() + t.slice(1));
+
+            const columnLabel = (c) => {
+                const map = {
+                    reading_date: "Date",
+                    record_date: "Date",
+                    reading_time: "Time",
+                    record_time: "Time"
+                };
+                return map[c] || titleCase(c);
+            };
+
+            tableHead.innerHTML = `<tr>${columns.map(c => `<th>${columnLabel(c)}</th>`).join("")}</tr>`;
+
+            const render = (data) => {
+                if (!data.length) {
+                    tableBody.innerHTML = `<tr><td colspan="${columns.length}" class="empty-msg">No matching records.</td></tr>`;
+                    return;
+                }
+                tableBody.innerHTML = data
+                    .map(r => `
+                        <tr>
+                            ${columns.map(c => `<td>${r[c] ?? "--"}</td>`).join("")}
+                        </tr>
+                    `)
+                    .join("");
+            };
+
+            // ----------------------------
+            // Faceted filtering (Amazon/Flipkart style)
+            // ----------------------------
+            const state = {
+                textQuery: "",
+                // { colName: { type: 'string'|'number'|'date', selected: Set<string>, min?: number, max?: number, from?: string, to?: string } }
+                filters: {},
+                dateTime: {
+                    dateCol: "",
+                    timeCol: "",
+                    fromDate: "",
+                    fromTime: "",
+                    toDate: "",
+                    toTime: ""
+                }
+            };
+
+            const isNumberLike = (v) => {
+                if (v === null || v === undefined) return false;
+                const s = String(v).trim();
+                if (!s || s === "--") return false;
+                return !Number.isNaN(Number(s));
+            };
+
+            const isDateLike = (v) => {
+                if (v === null || v === undefined) return false;
+                const s = String(v).trim();
+                if (!s || s === "--") return false;
+                const d = new Date(s);
+                return !Number.isNaN(d.getTime());
+            };
+
+            const inferColumnType = (col) => {
+                const sample = rows
+                    .map(r => r[col])
+                    .filter(v => v !== null && v !== undefined && String(v).trim() !== "" && String(v).trim() !== "--")
+                    .slice(0, 50);
+                if (!sample.length) return "string";
+                const numCount = sample.filter(isNumberLike).length;
+                const dateCount = sample.filter(isDateLike).length;
+                if (numCount / sample.length >= 0.9) return "number";
+                if (dateCount / sample.length >= 0.9) return "date";
+                return "string";
+            };
+
+            const escapeHtml = (s) =>
+                String(s)
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#039;");
+
+            const buildFiltersUI = () => {
+                if (!filtersContainer) return;
+                filtersContainer.innerHTML = "";
+
+                // Build filters in the SAME order as the table columns
+                // (so Advanced Search selection order is preserved).
+                const DATE_TIME_COLS = columns.filter(c => /date|time/i.test(c));
+                const maxFilterColumns = 18;
+                const filterCols = columns
+                    // We already have a single Date & Time filter section; don't duplicate date/time columns here.
+                    .filter(c => !DATE_TIME_COLS.includes(c))
+                    .slice(0, maxFilterColumns);
+
+                filterCols.forEach(col => {
+                    const type = inferColumnType(col);
+                    state.filters[col] = state.filters[col] || { type };
+
+                    const section = document.createElement("details");
+                    section.className = "filter-section";
+                    // Open the most common filter by default
+                    section.open = (col === "location_name" || col === "station_name" || col === "name");
+
+                    const summary = document.createElement("summary");
+                    summary.className = "filter-summary";
+                    summary.innerHTML = `<span>${escapeHtml(columnLabel(col))}</span><span class="filter-badge" id="badge-${escapeHtml(col)}"></span>`;
+                    section.appendChild(summary);
+
+                    const body = document.createElement("div");
+                    body.className = "filter-body";
+
+                    if (type === "number") {
+                        const minId = `min-${col}`;
+                        const maxId = `max-${col}`;
+                        body.innerHTML = `
+                            <div class="range-row">
+                                <input id="${escapeHtml(minId)}" class="range-input" type="number" placeholder="Min" />
+                                <input id="${escapeHtml(maxId)}" class="range-input" type="number" placeholder="Max" />
+                            </div>
+                        `;
+                        section.appendChild(body);
+                        filtersContainer.appendChild(section);
+
+                        const minEl = body.querySelector(`#${CSS.escape(minId)}`);
+                        const maxEl = body.querySelector(`#${CSS.escape(maxId)}`);
+                        const onRange = () => {
+                            const min = minEl.value === "" ? null : Number(minEl.value);
+                            const max = maxEl.value === "" ? null : Number(maxEl.value);
+                            state.filters[col].min = min;
+                            state.filters[col].max = max;
+                            applyAll();
+                        };
+                        minEl.addEventListener("input", onRange);
+                        maxEl.addEventListener("input", onRange);
+                        return;
+                    }
+
+                    if (type === "date") {
+                        const fromId = `from-${col}`;
+                        const toId = `to-${col}`;
+                        body.innerHTML = `
+                            <div class="range-row">
+                                <input id="${escapeHtml(fromId)}" class="range-input" type="date" />
+                                <input id="${escapeHtml(toId)}" class="range-input" type="date" />
+                            </div>
+                        `;
+                        section.appendChild(body);
+                        filtersContainer.appendChild(section);
+
+                        const fromEl = body.querySelector(`#${CSS.escape(fromId)}`);
+                        const toEl = body.querySelector(`#${CSS.escape(toId)}`);
+                        const onDate = () => {
+                            state.filters[col].from = fromEl.value || "";
+                            state.filters[col].to = toEl.value || "";
+                            applyAll();
+                        };
+                        fromEl.addEventListener("change", onDate);
+                        toEl.addEventListener("change", onDate);
+                        return;
+                    }
+
+                    // string/categorical
+                    // Build value counts (so UI can show "(count)" like e-commerce filters)
+                    const counts = new Map();
+                    rows.forEach(r => {
+                        const vv = r[col];
+                        if (vv === null || vv === undefined) return;
+                        const s = String(vv).trim();
+                        if (!s) return;
+                        counts.set(s, (counts.get(s) || 0) + 1);
+                    });
+                    const unique = Array.from(counts.entries())
+                        .sort((a, b) => b[1] - a[1]) // most common first
+                        .map(([val]) => val)
+                        .slice(0, 80);
+
+                    state.filters[col].selected = state.filters[col].selected || new Set();
+
+                    const searchId = `fsearch-${col}`;
+                    body.innerHTML = `
+                        <input id="${escapeHtml(searchId)}" class="facet-search" type="text" placeholder="Search values..." />
+                        <div class="facet-list" id="facet-${escapeHtml(col)}"></div>
+                    `;
+                    section.appendChild(body);
+                    filtersContainer.appendChild(section);
+
+                    const listEl = body.querySelector(`#facet-${CSS.escape(col)}`);
+                    const searchEl = body.querySelector(`#${CSS.escape(searchId)}`);
+
+                    const renderList = (q = "") => {
+                        const query = q.trim().toLowerCase();
+                        const items = unique.filter(v => v.toLowerCase().includes(query));
+                        listEl.innerHTML = items.map(v => {
+                            const checked = state.filters[col].selected.has(v) ? "checked" : "";
+                            const safe = escapeHtml(v);
+                            const count = counts.get(v) || 0;
+                            return `
+                                <label class="facet-item">
+                                    <input type="checkbox" data-col="${escapeHtml(col)}" value="${safe}" ${checked}/>
+                                    <span title="${safe}">${safe}</span>
+                                    <span style="margin-left:auto; opacity:0.75; font-size:12px;">${count}</span>
+                                </label>
+                            `;
+                        }).join("") || `<div class="empty-msg" style="padding:10px 6px;">No values</div>`;
+                    };
+
+                    renderList();
+
+                    listEl.addEventListener("change", (e) => {
+                        const t = e.target;
+                        if (!t || t.tagName !== "INPUT") return;
+                        const value = t.value;
+                        if (t.checked) state.filters[col].selected.add(value);
+                        else state.filters[col].selected.delete(value);
+                        applyAll();
+                    });
+                    searchEl.addEventListener("input", () => renderList(searchEl.value));
+                });
+            };
+
+            const applyFacetFilters = (data) => {
+                return data.filter(row => {
+                    for (const [col, f] of Object.entries(state.filters)) {
+                        const v = row[col];
+                        if (f.type === "string") {
+                            const sel = f.selected;
+                            if (sel && sel.size > 0) {
+                                if (!sel.has(String(v ?? ""))) return false;
+                            }
+                        } else if (f.type === "number") {
+                            if (v === null || v === undefined || String(v).trim() === "") continue;
+                            const n = Number(v);
+                            if (Number.isNaN(n)) continue;
+                            if (f.min !== null && f.min !== undefined && n < f.min) return false;
+                            if (f.max !== null && f.max !== undefined && n > f.max) return false;
+                        } else if (f.type === "date") {
+                            if (!v) continue;
+                            const d = new Date(v);
+                            if (Number.isNaN(d.getTime())) continue;
+                            if (f.from) {
+                                const from = new Date(f.from);
+                                if (!Number.isNaN(from.getTime()) && d < from) return false;
+                            }
+                            if (f.to) {
+                                const to = new Date(f.to);
+                                if (!Number.isNaN(to.getTime()) && d > to) return false;
+                            }
+                        }
+                    }
+                    return true;
+                });
+            };
+
+            const parseRowDateTime = (row) => {
+                const dateCol = state.dateTime.dateCol;
+                const timeCol = state.dateTime.timeCol;
+                if (!dateCol) return null;
+                const rawDate = row[dateCol];
+                if (!rawDate) return null;
+                const base = new Date(rawDate);
+                if (Number.isNaN(base.getTime())) return null;
+
+                let rawTime = timeCol ? (row[timeCol] ?? "") : "";
+                rawTime = String(rawTime || "");
+                // accept "HH:MM" or "HH:MM:SS"
+                const hhmm = rawTime.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+                if (hhmm) {
+                    const hh = Number(hhmm[1] || 0);
+                    const mm = Number(hhmm[2] || 0);
+                    const ss = Number(hhmm[3] || 0);
+                    base.setHours(hh, mm, ss, 0);
+                } else {
+                    // if no time column/invalid time, treat as 00:00
+                    base.setHours(0, 0, 0, 0);
+                }
+                return base;
+            };
+
+            const applyDateTimeRange = (data) => {
+                const { fromDate, fromTime, toDate, toTime } = state.dateTime;
+                const hasFrom = !!fromDate;
+                const hasTo = !!toDate;
+                if (!hasFrom && !hasTo) return data;
+                if (!state.dateTime.dateCol) return data;
+
+                const from = hasFrom ? new Date(fromDate) : null;
+                const to = hasTo ? new Date(toDate) : null;
+
+                if (from && !Number.isNaN(from.getTime())) {
+                    const [hh, mm] = (fromTime || "00:00").split(":");
+                    from.setHours(Number(hh || 0), Number(mm || 0), 0, 0);
+                }
+                if (to && !Number.isNaN(to.getTime())) {
+                    const [hh, mm] = (toTime || "23:59").split(":");
+                    to.setHours(Number(hh || 23), Number(mm || 59), 59, 999);
+                }
+
+                return data.filter(row => {
+                    const dt = parseRowDateTime(row);
+                    if (!dt) return false;
+                    if (from && !Number.isNaN(from.getTime()) && dt < from) return false;
+                    if (to && !Number.isNaN(to.getTime()) && dt > to) return false;
+                    return true;
+                });
+            };
+
+            const applyTextSearch = (data) => {
+                const q = (state.textQuery || "").trim().toLowerCase();
+                if (!q) return data;
+                return data.filter(r => columns.some(c => String(r[c] ?? "").toLowerCase().includes(q)));
+            };
+
+            const updateBadges = () => {
+                columns.forEach(col => {
+                    const f = state.filters[col];
+                    const badge = document.getElementById(`badge-${col}`);
+                    if (!badge || !f) return;
+                    let text = "";
+                    if (f.type === "string" && f.selected && f.selected.size) text = `${f.selected.size}`;
+                    if (f.type === "number" && (f.min != null || f.max != null)) text = "1";
+                    if (f.type === "date" && (f.from || f.to)) text = "1";
+                    badge.textContent = text;
+                    badge.style.display = text ? "inline-flex" : "none";
+                });
+
+                const dtBadge = document.getElementById("badge-__datetime__");
+                if (dtBadge) {
+                    const active = !!state.dateTime.fromDate || !!state.dateTime.toDate;
+                    dtBadge.textContent = active ? "1" : "";
+                    dtBadge.style.display = active ? "inline-flex" : "none";
+                }
+            };
+
+            const applyAll = () => {
+                let data = rows.slice();
+                data = applyFacetFilters(data);
+                data = applyDateTimeRange(data);
+                data = applyTextSearch(data);
+                updateBadges();
+                render(data);
+            };
+
+            // ----------------------------
+            // Date/time controls + sort controls
+            // ----------------------------
+            const guessDateCols = () => columns.filter(c => /date/i.test(c) || inferColumnType(c) === "date");
+            const guessTimeCols = () => columns.filter(c => /time/i.test(c));
+
+            const initDateTimeSelectors = () => {
+                const dateCols = guessDateCols();
+                const timeCols = guessTimeCols();
+
+                const preferredDate = dateCols.find(c => /reading_date/i.test(c)) || dateCols.find(c => /record_date/i.test(c)) || dateCols[0] || "";
+                const preferredTime = timeCols.find(c => /reading_time/i.test(c)) || timeCols.find(c => /record_time/i.test(c)) || timeCols[0] || "";
+
+                state.dateTime.dateCol = preferredDate;
+                state.dateTime.timeCol = preferredTime;
+
+                if (dtUsedDateEl) dtUsedDateEl.textContent = preferredDate ? columnLabel(preferredDate) : "Date";
+                if (dtUsedTimeEl) dtUsedTimeEl.textContent = preferredTime ? columnLabel(preferredTime) : "Time";
+
+                const enabled = !!preferredDate;
+                if (dtFromDateEl) dtFromDateEl.disabled = !enabled;
+                if (dtFromTimeEl) dtFromTimeEl.disabled = !enabled;
+                if (dtToDateEl) dtToDateEl.disabled = !enabled;
+                if (dtToTimeEl) dtToTimeEl.disabled = !enabled;
+            };
+
+            buildFiltersUI();
+            initDateTimeSelectors();
+
+            const bindDateTimeInputs = () => {
+                if (dtFromDateEl) dtFromDateEl.addEventListener("change", () => { state.dateTime.fromDate = dtFromDateEl.value || ""; applyAll(); });
+                if (dtFromTimeEl) dtFromTimeEl.addEventListener("change", () => { state.dateTime.fromTime = dtFromTimeEl.value || ""; applyAll(); });
+                if (dtToDateEl) dtToDateEl.addEventListener("change", () => { state.dateTime.toDate = dtToDateEl.value || ""; applyAll(); });
+                if (dtToTimeEl) dtToTimeEl.addEventListener("change", () => { state.dateTime.toTime = dtToTimeEl.value || ""; applyAll(); });
+            };
+            bindDateTimeInputs();
+
+            applyAll();
+
+            const applyFilter = () => {
+                state.textQuery = (filterInput.value || "");
+                applyAll();
+            };
+
+            if (filterInput) filterInput.addEventListener("input", applyFilter);
+            if (clearBtn) clearBtn.addEventListener("click", () => {
+                filterInput.value = "";
+                state.textQuery = "";
+                applyAll();
+                filterInput.focus();
+            });
+
+            if (clearAllBtn) clearAllBtn.addEventListener("click", () => {
+                state.textQuery = "";
+                if (filterInput) filterInput.value = "";
+                if (dtFromDateEl) dtFromDateEl.value = "";
+                if (dtFromTimeEl) dtFromTimeEl.value = "";
+                if (dtToDateEl) dtToDateEl.value = "";
+                if (dtToTimeEl) dtToTimeEl.value = "";
+                state.dateTime.fromDate = "";
+                state.dateTime.fromTime = "";
+                state.dateTime.toDate = "";
+                state.dateTime.toTime = "";
+                Object.values(state.filters).forEach(f => {
+                    if (f.type === "string" && f.selected) f.selected.clear();
+                    if (f.type === "number") { f.min = null; f.max = null; }
+                    if (f.type === "date") { f.from = ""; f.to = ""; }
+                });
+                // Rebuild UI to reset checkboxes/inputs
+                buildFiltersUI();
+                initDateTimeSelectors();
+                applyAll();
+            });
+        });
+    </script>
+</body>
+</html>
