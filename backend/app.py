@@ -6,9 +6,6 @@ from flask_cors import CORS
 import requests
 import pymysql
 
-#
-# JSON / DB value normalization helpers
-#
 def _timedelta_to_hhmmss(td: timedelta) -> str:
     total_seconds = int(td.total_seconds())
     hours = total_seconds // 3600
@@ -153,12 +150,22 @@ try:
 except Exception as e:
     print("WARNING: dotenv not loaded:", e)
 
-PORT = int(os.getenv("PORT", 5001))
+def _int_env(name: str, default: int) -> int:
+    val = os.getenv(name)
+    if val is None or str(val).strip() == "":
+        return default
+    try:
+        return int(val)
+    except Exception as e:
+        raise RuntimeError(f"{name} must be an integer, got: {val!r}") from e
+
+
+PORT = _int_env("PORT", 5001)
 HOST = os.getenv("HOST", "0.0.0.0")
 WEATHERAPI_KEY = os.getenv("WEATHERAPI_KEY", "")
 INDIA_DATA_API_KEY = os.getenv("INDIA_DATA_API_KEY", "")
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
-DB_PORT = int(os.getenv("DB_PORT", 3306))
+DB_PORT = _int_env("DB_PORT", 3306)
 DB_USER = os.getenv("DB_USER", "root")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME", "harshit")
