@@ -5,7 +5,7 @@ from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 import requests
 import pymysql
-
+        
 def _timedelta_to_hhmmss(td: timedelta) -> str:
     total_seconds = int(td.total_seconds())
     hours = total_seconds // 3600

@@ -1689,6 +1689,171 @@ input[type="checkbox"] {
   }
 }
 
+/* =========================================================
+   RESPONSIVE IMPROVEMENTS (Desktop + Mobile)
+   Place at end to override earlier duplicates.
+   ========================================================= */
+
+/* Login: make 3-name fields work on desktop, stack on mobile */
+.input-group-row {
+  display: flex;
+  gap: 10px;
+}
+.input-group-row .input-block {
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  body.page-login {
+    height: auto;
+    min-height: 100vh;
+    padding: 18px 0;
+  }
+
+  .login-container {
+    width: 94%;
+    padding: 12px;
+  }
+
+  .glass-card {
+    padding: 26px 18px;
+    border-radius: 18px;
+  }
+
+  .input-group-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+/* Dashboard typography + spacing */
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 16px;
+  }
+
+  .hero-section {
+    margin: 18px 0 22px;
+  }
+
+  .main-temp {
+    font-size: 56px;
+  }
+
+  .main-condition {
+    font-size: 18px;
+  }
+
+  .hl-temp {
+    font-size: 14px;
+  }
+}
+
+/* Navbar: wrap cleanly on mobile */
+@media (max-width: 768px) {
+  .navbar .nav-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .navbar .nav-left,
+  .navbar .nav-center,
+  .navbar .nav-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .navbar .nav-right {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .station-switcher-nav {
+    width: 100% !important;
+    max-width: 360px;
+  }
+}
+
+/* Weather grid + cards */
+@media (max-width: 600px) {
+  .weather-grid,
+  .grid-2x2 {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .weather-card.small-panel {
+    min-height: 160px !important;
+    height: auto !important;
+    padding: 18px 14px !important;
+  }
+
+  .weather-card .weather-icon {
+    width: 64px !important;
+    height: 64px !important;
+    font-size: 34px !important;
+  }
+
+  .weather-value {
+    font-size: 30px !important;
+  }
+}
+
+/* Split dashboard already stacks under 900px; tighten spacing for phones */
+@media (max-width: 600px) {
+  .split-dashboard {
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  .sun-panel-box {
+    padding: 18px 16px;
+    border-radius: 22px;
+  }
+}
+
+/* Trend modal + advanced search modal */
+@media (max-width: 600px) {
+  .trend-modal-content {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  #trend-big-val {
+    font-size: 38px;
+  }
+
+  .trend-stats-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .stat-box {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .search-modal-content {
+    width: 96%;
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .checkbox-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-footer {
+    width: 100%;
+  }
+}
+
 
 /* ======= NAVBAR REFINED UI ======= */
 
@@ -1834,6 +1999,5 @@ input[type="checkbox"] {
     border-radius: 8px;
     font-size: 14px;
 }
-
 
 
